@@ -17,6 +17,7 @@ export const errorHandler = (
   res: Response,
   _next: NextFunction
 ): void => {
+  void _next;
   logger.error({
     error: err.message,
     stack: err.stack,
