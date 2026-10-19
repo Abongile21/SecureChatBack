@@ -1,20 +1,26 @@
 import axios from 'axios';
-import openRouterConfig from '../config/openai';
+import { getOpenRouterConfig } from '../config/openai';
 import logger from '../config/logger';
 
 const MAX_MESSAGE_LENGTH = 2000;
 const MAX_CONTEXT_MESSAGES = 10;
 
-const openRouterClient = axios.create({
-  baseURL: openRouterConfig.baseURL,
-  timeout: openRouterConfig.timeout,
-  headers: {
-    Authorization: `Bearer ${openRouterConfig.apiKey}`,
-    'Content-Type': 'application/json',
-    'HTTP-Referer': openRouterConfig.referer,
-    'X-Title': openRouterConfig.title,
-  },
-});
+const getOpenRouterClient = () => {
+  const config = getOpenRouterConfig();
+  return {
+    config,
+    client: axios.create({
+      baseURL: config.baseURL,
+      timeout: config.timeout,
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': config.referer,
+        'X-Title': config.title,
+      },
+    }),
+  };
+};
 
 type ChatMessage = {
   role: 'system' | 'user' | 'assistant';
@@ -22,8 +28,9 @@ type ChatMessage = {
 };
 
 const requestCompletion = async (messages: ChatMessage[]): Promise<string> => {
-  const response = await openRouterClient.post('/chat/completions', {
-    model: openRouterConfig.model,
+  const { config, client } = getOpenRouterClient();
+  const response = await client.post('/chat/completions', {
+    model: config.model,
     messages,
   });
   const content = response.data?.choices?.[0]?.message?.content;
@@ -55,8 +62,9 @@ export const generateChatbotResponse = async (
   const boundedMessage = userMessage.trim().slice(0, MAX_MESSAGE_LENGTH);
 
   try {
+    const config = getOpenRouterConfig();
     return await requestCompletion([
-      { role: 'system', content: openRouterConfig.systemPrompt },
+      { role: 'system', content: config.systemPrompt },
       ...context.slice(-MAX_CONTEXT_MESSAGES),
       { role: 'user', content: boundedMessage },
     ]);

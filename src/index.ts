@@ -17,10 +17,6 @@ import { closeDatabase } from './config/database';
 // Load environment variables
 dotenv.config();
 
-if (process.env.NODE_ENV === 'production' && !process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET must be configured in production');
-}
-
 const app: Express = express();
 const DEFAULT_PORT = Number(process.env.PORT) || 5000;
 
