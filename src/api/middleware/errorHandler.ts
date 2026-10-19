@@ -31,7 +31,9 @@ export const errorHandler = (
     });
   } else {
     const message = err.message.toLowerCase();
-    const databaseError = message.includes('mongodb')
+    const databaseError = err.name.startsWith('Mongo')
+      || typeof (err as Error & { code?: unknown }).code === 'number'
+      || message.includes('mongodb')
       || message.includes('mongoserverselectionerror')
       || message.includes('mongonetworkerror')
       || message.includes('mongodb_uri');
