@@ -1,9 +1,9 @@
-import { Db, MongoClient } from 'mongodb';
+import { Db } from 'mongodb';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-let client: MongoClient | undefined;
 let databasePromise: Promise<Db> | undefined;
 
 export const getDatabase = (): Promise<Db> => {
@@ -12,10 +12,18 @@ export const getDatabase = (): Promise<Db> => {
     if (!uri) {
       return Promise.reject(new Error('MONGODB_URI must be configured'));
     }
-    const databaseClient = new MongoClient(uri);
-    client = databaseClient;
-    databasePromise = databaseClient.connect().then(() => {
-      const database = databaseClient.db(process.env.MONGODB_DB_NAME || process.env.DB_NAME || 'securechat_db');
+    databasePromise = mongoose.connect(uri, {
+      dbName: process.env.MONGODB_DB_NAME || process.env.DB_NAME || 'securechat_db',
+      maxPoolSize: 5,
+      minPoolSize: 0,
+      maxIdleTimeMS: 20000,
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
+    }).then(() => {
+      const database = mongoose.connection.db;
+      if (!database) {
+        throw new Error('Mongoose connected without an active database');
+      }
       return Promise.all([
         database.collection('users').createIndex({ email: 1 }, { unique: true }),
         database.collection('chat_sessions').createIndex({ user_id: 1 }, { unique: true }),
@@ -26,8 +34,7 @@ export const getDatabase = (): Promise<Db> => {
         database.collection('lesson_progress').createIndex({ user_id: 1, lesson_id: 1 }, { unique: true }),
       ]).then(() => database);
     }).catch(async (error: unknown) => {
-      await databaseClient.close().catch(() => undefined);
-      client = undefined;
+      await mongoose.disconnect().catch(() => undefined);
       databasePromise = undefined;
       throw error;
     });
@@ -37,9 +44,8 @@ export const getDatabase = (): Promise<Db> => {
 };
 
 export const closeDatabase = async (): Promise<void> => {
-  if (databasePromise && client) {
-    await client.close();
+  if (databasePromise) {
+    await mongoose.disconnect();
     databasePromise = undefined;
-    client = undefined;
   }
 };
