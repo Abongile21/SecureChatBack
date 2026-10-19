@@ -30,6 +30,18 @@ export const errorHandler = (
       statusCode: err.statusCode,
     });
   } else {
+    const message = err.message.toLowerCase();
+    const databaseError = message.includes('mongodb')
+      || message.includes('mongoserverselectionerror')
+      || message.includes('mongonetworkerror')
+      || message.includes('mongodb_uri');
+    if (databaseError) {
+      res.status(503).json({
+        error: 'Database unavailable. Check MONGODB_URI and MongoDB Atlas Network Access.',
+        statusCode: 503,
+      });
+      return;
+    }
     res.status(500).json({
       error: 'Internal server error',
       statusCode: 500,

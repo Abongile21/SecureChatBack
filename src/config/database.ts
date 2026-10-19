@@ -27,6 +27,11 @@ export const getDatabase = (): Promise<Db> => {
         seedQuizzes(database),
         seedLessons(database),
       ]).then(() => database);
+    }).catch(async (error: unknown) => {
+      await databaseClient.close().catch(() => undefined);
+      client = undefined;
+      databasePromise = undefined;
+      throw error;
     });
   }
 
