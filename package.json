@@ -8,7 +8,6 @@
     "build": "tsc",
     "start": "node dist/index.js",
     "seed:demo": "ts-node src/scripts/seedDemoUser.ts",
-    "test": "jest",
     "lint": "eslint src/**/*.ts",
     "type-check": "tsc --noEmit"
   },
@@ -30,14 +29,11 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.0",
     "@types/express": "^4.17.21",
-    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^20.10.6",
     "@typescript-eslint/eslint-plugin": "^8.64.0",
     "@typescript-eslint/parser": "^8.64.0",
     "eslint": "^8.56.0",
-    "jest": "^25.0.0",
-    "ts-jest": "^27.0.3",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.3.3"
