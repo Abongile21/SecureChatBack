@@ -87,6 +87,23 @@ app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+const apiInfo = (_req: Request, res: Response): void => {
+  res.status(200).json({
+    name: 'SecureChat API',
+    status: 'ok',
+    health: '/health',
+    endpoints: {
+      auth: ['/api/auth/register', '/api/auth/login'],
+      chat: ['/api/chat/message', '/api/chat/history/:chatId', '/api/chat/start'],
+      users: ['/api/users/profile', '/api/users/dashboard'],
+      learning: ['/api/quizzes', '/api/quizzes/lessons'],
+    },
+  });
+};
+
+app.get('/', apiInfo);
+app.get('/api', apiInfo);
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
